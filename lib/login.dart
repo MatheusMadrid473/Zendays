@@ -2,9 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:zendays/homeuser.dart';
+import 'package:zendays/main.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController _usernameController = TextEditingController();
@@ -46,8 +45,7 @@ class LoginPage extends StatelessWidget {
                 final token = await _login(email, senha);
                 if (token != null) {
                   // Login successful, save token and navigate to HomeUserPage
-                  SharedPreferences preferences = await SharedPreferences.getInstance();
-                  await preferences.setString('token', token);
+                  saveToken(token);
 
                   Navigator.pushNamed(context, '/home_user');
                 } else {
@@ -62,9 +60,10 @@ class LoginPage extends StatelessWidget {
       ),
     );
   }
-
+//GET URL
   Future<String?> _login(String email, String senha) async {
-    final url = 'https://2cee-2804-431-c7d3-ed9c-941f-2fb8-a25f-c0ad.ngrok-free.app/api/v1/Auth/Login';
+    final apiUrl = await TokenManager.getUrl();
+    final url = '$apiUrl/Auth/Login';
     final Map<String, String> headers = {
       'Content-Type': 'application/json',
     };
@@ -85,17 +84,11 @@ class LoginPage extends StatelessWidget {
     }
   }
 
-  Future<void> _saveToken(String token) async {
-    final preferences = await SharedPreferences.getInstance();
-    final secureStorage = FlutterSecureStorage();
-
-    await preferences.setString('token', token);
-    await secureStorage.write(key: 'token', value: token);
+  Future<void> saveToken(String token) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
   }
 }
 
-void main() {
-  runApp(MyApp());
-}
 
 
